@@ -1,0 +1,6 @@
+__pycache__
+*.pt
+*.log
+*.egg-info
+venv
+wandb
