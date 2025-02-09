@@ -2,9 +2,10 @@ import warnings
 from collections import defaultdict
 
 import torch
+import torch.nn.functional as F
 from torch import nn
 
-from .masks import assigned_params_mask
+from .masks import assigned_params_mask, unassigned_params_mask
 
 
 def attr_is_tensor(module, name):
@@ -48,14 +49,26 @@ def _bn_compute_frozen_running_stats(module, args, output):
 
     if not attr_is_tensor(module, "weight_excess_capacity"):
         return
-    mask = assigned_params_mask(module.weight_excess_capacity)
+    mask = unassigned_params_mask(module.weight_excess_capacity)
 
     view = list(module.running_mean.shape)
     if isinstance(module, nn.BatchNorm2d):
         view += [1, 1]
-    frozen = (x - module._frozen_running_mean.view(view)) / (
-        module._frozen_running_var.view(view) + module.eps
-    ).sqrt()
+    frozen = F.batch_norm(
+        x,
+        module._frozen_running_mean,
+        module._frozen_running_var,
+        weight=module.weight,
+        bias=module.bias,
+        # Even though the module is in training mode, set training to false
+        # here because we don't want the frozen running stats tensors to be
+        # updated. We could defensively copy the frozen running stats tensors
+        # when caling this function, but setting training to false is more
+        # efficient.
+        training=False,
+        momentum=module.momentum,
+        eps=module.eps,
+    )
     if module.weight is not None:
         return torch.where(
             mask.view(view),
