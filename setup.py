@@ -30,6 +30,9 @@ setup(
         "tqdm",
         "ipython",
         "datasets",
+        "neural_collapse@git+https://github.com/rhubarbwu/neural-collapse.git",
+        "foolbox",
+        "robustbench@git+https://github.com/RobustBench/robustbench.git",
     ],
     extras_require={
         "dev": ["check-manifest", "black", "flake8", "pre-commit"],
