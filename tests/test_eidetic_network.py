@@ -1,17 +1,20 @@
 import os
 
 import pytest
+
 import torch
+import torch.optim as optim
 import torch.nn as nn
 import torch.nn.functional as F
-import torch.optim as optim
-import wandb
 from torchmetrics.classification import MulticlassAccuracy
 
+import wandb
+
 import eideticnet_training as eideticnet
+from eideticnet_training.utils.data import create_sequential_classification
 from eideticnet_training import EideticNetwork
 from eideticnet_training.prune import bridge_prune
-from eideticnet_training.utils.data import create_sequential_classification
+
 
 os.environ["WANDB_MODE"] = "disabled"
 wandb.init()
@@ -67,6 +70,7 @@ class EideticTestNet(EideticNetwork):
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="requires GPU")
 @pytest.mark.parametrize("pruning_type", (1, 2, "l1", "l2", "taylor"))
 def test_test_net_mnist_5(pruning_type, lr=0.1):
+
     num_tasks = 2
     model = EideticTestNet(num_tasks=num_tasks)
     model.to("cuda")
@@ -98,7 +102,7 @@ def test_test_net_mnist_5(pruning_type, lr=0.1):
             pin_memory=True,
             shuffle=True,
             drop_last=True,
-            num_workers=os.cpu_count(),
+            num_workers=1,
             batch_size=256,
         )
 
