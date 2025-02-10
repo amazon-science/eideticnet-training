@@ -633,6 +633,7 @@ class EideticNetwork(nn.Module):
         reduce_learning_rate_before_pruning=0.0,
         test_frequently=False,
         lower_bound=False,
+        max_epochs=math.inf,
     ):
         """
         Train the model on a specific task and, after early stopping patience
@@ -687,7 +688,9 @@ class EideticNetwork(nn.Module):
         def stop_training(m, epoch, best, best_epoch):
             patience_exceeded = epoch - best_epoch > early_stopping_patience
             # Train if we've memorized the training set or exceeded patience.
-            return m == 1 or m < best and patience_exceeded
+            return (
+                epoch >= max_epochs or m == 1 or m < best and patience_exceeded
+            )
 
         if isinstance(pruning_type, (tuple, list)):
             pruning_type = cycle(pruning_type)

@@ -250,7 +250,7 @@ def run(args):
 
     hyperparams = {
         "max_interpruning_epochs": args.max_recovery_epochs,
-        "epochs": args.epochs,
+        "max_epochs": args.max_epochs,
         "early_stopping_patience": args.early_stopping_patience,
         "pruning_step": args.pruning_step_size,
         "pruning_step_size_is_constant": args.pruning_step_size_is_constant,
@@ -483,9 +483,9 @@ def get_parser():
         "--momentum", type=float, default=0, help="Momentum when using SGD"
     )
     parser.add_argument(
-        "--epochs",
+        "--max-epochs",
         type=int,
-        default=None,
+        default=math.inf,
         help=(
             "Number of epochs to train. This overrides early stopping patience."
         ),
