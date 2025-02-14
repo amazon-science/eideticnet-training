@@ -2,6 +2,8 @@
 
 EideticNet is a PyTorch-based framework for training neural networks that can learn multiple tasks sequentially without [(catastrophic) forgetting](https://en.wikipedia.org/wiki/Catastrophic_interference). It accomplishes this iterative pruning, selective deletion of synaptic connections on a task-specific basis, and parameter freezing. The available pruning methods are [Taylor expansion-based pruning](https://openaccess.thecvf.com/content_CVPR_2019/html/Molchanov_Importance_Estimation_for_Neural_Network_Pruning_CVPR_2019_paper.html), Lp-norm weight magnitude pruning, and random pruning.
 
+See [Eidetic Learning: an Efficient and Provable Solution to Catastrophic Forgetting](https://arxiv.org/abs/2502.09500) for an example of research conducted by training `EideticNet`s.
+
 # Features
 
 - For each task on which a network is trained, accuracy is preserved perfectly.
@@ -134,8 +136,10 @@ for task_id in range(num_tasks):
 ```
 
 For working examples, see:
-- Simple example: `tests/test_eidetic_network.py`
-- Full implementation: `experiments/sequential_classification.py`
+
+- Task-incremental learning for image classification: `experiments/sequential_classification.py`
+- Cyclical task-incremental learning for image classification: `experiments/cyclical_classification.py`.
+- Unit test: `tests/test_eidetic_network.py`
 
 # Testing
 
@@ -148,3 +152,19 @@ pytest
 # Contributing
 
 See `CONTRIBUTING.md`.
+
+# Citing
+
+If you use this software in your research please cite:
+
+```
+@misc{dronen2025eideticlearningefficientprovable,
+      title={Eidetic Learning: an Efficient and Provable Solution to Catastrophic Forgetting},
+      author={Nicholas Dronen and Randall Balestriero},
+      year={2025},
+      eprint={2502.09500},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2502.09500},
+}
+```
