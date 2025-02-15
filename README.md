@@ -1,6 +1,6 @@
 # EideticNet
 
-EideticNet is a PyTorch-based framework for training neural networks that can learn multiple tasks sequentially without [(catastrophic) forgetting](https://en.wikipedia.org/wiki/Catastrophic_interference). It accomplishes this iterative pruning, selective deletion of synaptic connections on a task-specific basis, and parameter freezing. The available pruning methods are [Taylor expansion-based pruning](https://openaccess.thecvf.com/content_CVPR_2019/html/Molchanov_Importance_Estimation_for_Neural_Network_Pruning_CVPR_2019_paper.html), Lp-norm weight magnitude pruning, and random pruning.
+EideticNet is a PyTorch-based framework for training neural networks that can learn multiple tasks sequentially without [(catastrophic) forgetting](https://en.wikipedia.org/wiki/Catastrophic_interference). It accomplishes this through iterative pruning, selective deletion of synaptic connections on a task-specific basis, and parameter freezing. The available pruning methods are [Taylor expansion-based pruning](https://openaccess.thecvf.com/content_CVPR_2019/html/Molchanov_Importance_Estimation_for_Neural_Network_Pruning_CVPR_2019_paper.html), Lp-norm weight magnitude pruning, and random pruning.
 
 See [Eidetic Learning: an Efficient and Provable Solution to Catastrophic Forgetting](https://arxiv.org/abs/2502.09500) for an example of research conducted by training `EideticNet`s.
 
@@ -8,7 +8,7 @@ See [Eidetic Learning: an Efficient and Provable Solution to Catastrophic Forget
 
 - For each task on which a network is trained, accuracy is preserved perfectly.
 - Functions for propagating sparsity induced by pruning to subsequent layers.
-- Forward transfer is configurable. When forward forward transfer is enabled, the features learned during training of previous tasks are available to (the subsequent layers of) subsequent ones. When forward transfer is disabled, each task occupies its own disjoint subnetwork.
+- Forward transfer is configurable. When forward transfer is enabled, the features learned during training of previous tasks are available to (the subsequent layers of) subsequent ones. When forward transfer is disabled, each task occupies its own disjoint subnetwork.
 - Batch normalization parameters are preserved for each task.
 
 # Installation
