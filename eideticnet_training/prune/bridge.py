@@ -34,6 +34,54 @@ def extract_first_two_dims(tensor):
     return tensor[(slice(None), slice(None)) + (0,) * (tensor.dim() - 2)]
 
 
+def propagate_mask(layer, next_layer, current_bn=None):
+    """Propagates pruning masks through connected layers in a neural network.
+
+    This function ensures consistency in pruning by propagating masks from one
+    layer to connected components:
+
+        1. Masks the bias of the current layer if pruned neurons exist
+        2. Propagates masks to the batch normalization layer if present
+        3. Propagates masks to the input dimensions of the following layer
+
+    Args:
+        layer (torch.nn.Module): The current layer being pruned
+        next_layer (Optional[torch.nn.Module]): The subsequent layer in the
+            network
+        current_bn (Optional[torch.nn.Module]): Optional batch normalization
+            layer associated with the current layer
+
+    Note:
+        Handles special cases like spatial pooling between Conv2D and Linear
+            layers
+        by adjusting mask propagation accordingly.
+    """
+    mask = (layer.weight_mask.flatten(1) == 0).all(1)
+
+    # Prune the bias based on the weight mask to prevent bias units from being
+    # added to the outputs of pruned neurons.
+    if layer.bias is not None:
+        layer.bias_mask[mask] = 0
+
+    # Propagate the weight masking to the normalization layer (if any)
+    has_bn = current_bn is not None and not isinstance(
+        current_bn, torch.nn.Identity
+    )
+    if has_bn:
+        current_bn.weight_mask[mask] = 0
+        current_bn.bias_mask[mask] = 0
+
+    # Propagate the weight masking to the following layer's input dim
+    if next_layer is not None:
+        # make sure we handle spatial pooling (e.g. conv2d-global pool-linear)
+        if isinstance(layer, torch.nn.Conv2d) and isinstance(
+            next_layer, torch.nn.Linear
+        ):
+            spatial_pooling = next_layer.weight.size(1) // layer.weight.size(0)
+            mask = torch.repeat_interleave(mask, spatial_pooling)
+        next_layer.weight_mask[:, mask] = 0
+
+
 @torch.no_grad
 def bridge_prune(
     current_layer,
@@ -96,32 +144,7 @@ def bridge_prune(
             importance_scores=importance,
         )
 
-    has_bn = current_bn is not None and not isinstance(
-        current_bn, torch.nn.Identity
-    )
-    mask = (current_layer.weight_mask.flatten(1) == 0).all(1)
-
-    # for the bias we need to prune based on the weight masking to ensure
-    # dissociativity
-    if current_layer.bias is not None:
-        current_layer.bias_mask[mask] = 0
-
-    # we propagate the weight masking to the bn (if any)
-    if has_bn:
-        current_bn.weight_mask[mask] = 0
-        current_bn.bias_mask[mask] = 0
-
-    # we propagate the weight masking to the following layer's input dim
-    if following_layer is not None:
-        # make sure we handle spatial pooling (e.g. conv2d-global pool-linear)
-        if isinstance(current_layer, torch.nn.Conv2d) and isinstance(
-            following_layer, torch.nn.Linear
-        ):
-            spatial_pooling = following_layer.weight.size(
-                1
-            ) // current_layer.weight.size(0)
-            mask = torch.repeat_interleave(mask, spatial_pooling)
-        following_layer.weight_mask[:, mask] = 0
+    propagate_mask(current_layer, following_layer, current_bn=current_bn)
 
 
 @torch.no_grad

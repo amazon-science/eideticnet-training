@@ -196,6 +196,17 @@ def test_smoke_bridge_prune():
 
 def test_smoke_bridge_prune_residual():
     """
-    Smoke test of bridge_prune_residual.
+    Smoke test of bridge_prune_residual with Conv2d layers, mimicking ResNet's usage pattern.
     """
-    raise NotImplementedError()
+    # Setup layers matching ResNet's block structure
+    in_layer = torch.nn.Conv2d(64, 128, kernel_size=3, padding=1)
+    out_layer = torch.nn.Conv2d(128, 256, kernel_size=3, padding=1)
+    res_layer = torch.nn.Conv2d(64, 256, kernel_size=1, bias=False)
+
+    # Initialize weight masks as required by bridge_prune_residual
+    in_layer.weight_mask = torch.ones_like(in_layer.weight)
+    out_layer.weight_mask = torch.ones_like(out_layer.weight)
+    res_layer.weight_mask = torch.ones_like(res_layer.weight)
+
+    # Test the residual pruning
+    bridge_prune_residual(in_layer, out_layer, res_layer)
